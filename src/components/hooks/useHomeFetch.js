@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { POPULAR_BASE_URL } from "../../config";
 
-export const useHomeFetch = () => {
+export const useHomeFetch = (searchTerm) => {
   const [state, setState] = useState({ movies: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -31,9 +31,23 @@ export const useHomeFetch = () => {
     }
     setLoading(false);
   };
+
+  // Fetch Popular Movies initally on mount
   useEffect(() => {
-    fetchMovies(POPULAR_BASE_URL);
+    if (sessionStorage.homeState) {
+      setState(JSON.parse(sessionStorage.homeState));
+      setLoading(false);
+    } else {
+      fetchMovies(POPULAR_BASE_URL);
+    }
   }, []);
+
+  // Saving to sessionStorage - exists until browser window is closed
+  useEffect(() => {
+    if (!searchTerm) {
+      sessionStorage.setItem("homeState", JSON.stringify(state));
+    }
+  }, [searchTerm, state]);
 
   return [{ state, loading, error }, fetchMovies];
 };
